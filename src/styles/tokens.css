@@ -1,0 +1,63 @@
+@layer tokens {
+  :root {
+    /* Merek: Hijau Lumut */
+    --brand-700: #1f4d38;
+    --brand-600: #2f6b4f;
+    --brand-500: #4a8a68;
+    --brand-100: #dcebdd;
+    --brand-50: #f0f6f0;
+
+    /* Teks dan permukaan */
+    --ink-900: #1f2a24;
+    --ink-700: #3a4640;
+    --ink-500: #5b6760;
+    --surface: #ffffff;
+    --surface-sand: #faf6ee;
+    --surface-glass: rgba(255, 255, 255, 0.82);
+    --surface-glass-fallback: rgba(255, 255, 255, 0.94);
+    --border-soft: rgba(47, 107, 79, 0.16);
+
+    /* Batu andesit (netral hangat) */
+    --stone-100: #efeae2;
+    --stone-300: #d6cec1;
+    --stone-500: #8b8378;
+    --stone-900: #26231f;
+
+    /* Aksen */
+    --terra-700: #8f3d1b;
+    --terra-600: #b4532a;
+    --terra-500: #d26a3c;
+    --terra-100: #f6dfd2;
+
+    --gold-700: #8a5a00;
+    --gold-500: #e0a526;
+    --gold-100: #fbefcf;
+
+    --ijen-700: #0e6f7a;
+    --ijen-500: #2aa3ad;
+    --ijen-100: #d8eef0;
+
+    /* Status (selalu disertai ikon dan teks) */
+    --ok: #166534;
+    --ok-bg: #dcfce7;
+    --warn: #8a5a00;
+    --warn-bg: #fbefcf;
+    --danger: #b42318;
+    --danger-bg: #fde8e6;
+    --info: #0e6f7a;
+    --info-bg: #d8eef0;
+
+    /* Radius, bayangan, dan jarak */
+    --radius-sm: 0.625rem;
+    --radius-md: 1rem;
+    --radius-lg: 1.5rem;
+    --radius-pill: 999px;
+
+    --shadow-card: 0 8px 24px rgba(31, 77, 56, 0.1);
+    --shadow-glass: 0 10px 30px rgba(31, 42, 36, 0.08);
+    --focus-ring: 0 0 0 3px #ffffff, 0 0 0 6px #1f4d38;
+
+    --container-max: 75rem;
+    --reading-max: 45rem;
+  }
+}

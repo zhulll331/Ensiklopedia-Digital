@@ -1,0 +1,47 @@
+{
+  "name": "ensiklopedia-megalitik-banyuwangi",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Ensiklopedia Digital Megalitik Banyuwangi (EDMB) — Web-app edukasi budaya untuk siswa SD kelas III-IV, guru, dan kurator.",
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "db:check": "node scripts/check-migrations.mjs",
+    "release:check": "node scripts/verify-release-readiness.mjs",
+    "supabase:bootstrap": "node scripts/bootstrap-supabase.mjs"
+  },
+  "dependencies": {
+    "@fontsource-variable/nunito-sans": "latest",
+    "@fontsource-variable/plus-jakarta-sans": "latest",
+    "@fontsource/caveat": "latest",
+    "@supabase/ssr": "latest",
+    "@supabase/supabase-js": "latest",
+    "lucide-react": "latest",
+    "next": "^16.0.0",
+    "qrcode": "^1.5.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "server-only": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@playwright/test": "latest",
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^24.0.0",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^16.0.0",
+    "sharp": "latest",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.8.0",
+    "vitest": "latest"
+  }
+}

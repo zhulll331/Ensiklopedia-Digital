@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title-md">
+  <title id="title-md">Ilustrasi Menhir dan Dolmen</title>
+  <rect width="800" height="600" fill="#faf6ee"/>
+  <circle cx="650" cy="120" r="64" fill="#e0a526" opacity="0.45"/>
+  <path d="M0 430 Q220 355 440 410 T800 390 L800 600 L0 600 Z" fill="#dcebdd"/>
+  <path d="M0 490 Q320 440 580 475 T800 465 L800 600 L0 600 Z" fill="#4a8a68" opacity="0.35"/>
+  <rect x="165" y="340" width="38" height="105" rx="8" fill="#8b8378"/>
+  <rect x="295" y="340" width="38" height="105" rx="8" fill="#8b8378"/>
+  <rect x="130" y="295" width="238" height="52" rx="16" fill="#5b6760"/>
+  <path d="M510 445 L536 210 Q556 175 576 210 L602 445 Z" fill="#3a4640"/>
+  <path d="M548 445 L556 290 Q563 275 570 290 L578 445 Z" fill="#2f6b4f" opacity="0.5"/>
+</svg>

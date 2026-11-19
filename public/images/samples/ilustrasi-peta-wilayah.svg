@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title-pw">
+  <title id="title-pw">Ilustrasi Wilayah Umum Banyuwangi</title>
+  <rect width="800" height="600" fill="#d8eef0"/>
+  <path d="M0 320 L190 190 L350 285 L520 170 L800 320 L800 600 L0 600 Z" fill="#dcebdd"/>
+  <path d="M0 400 Q260 350 540 410 T800 390 L800 600 L0 600 Z" fill="#4a8a68" opacity="0.4"/>
+  <circle cx="250" cy="340" r="66" fill="#d26a3c" opacity="0.28" stroke="#b4532a" stroke-width="4" stroke-dasharray="10 8"/>
+  <circle cx="430" cy="390" r="66" fill="#2f6b4f" opacity="0.25" stroke="#1f4d38" stroke-width="4" stroke-dasharray="10 8"/>
+  <circle cx="560" cy="460" r="66" fill="#e0a526" opacity="0.3" stroke="#8a5a00" stroke-width="4" stroke-dasharray="10 8"/>
+</svg>

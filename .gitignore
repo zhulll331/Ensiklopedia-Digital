@@ -1,0 +1,23 @@
+# Dependencies
+/node_modules
+/.pnp
+.pnp.*
+
+# Next.js
+/.next/
+/out/
+
+# Build & test artifacts
+/coverage
+/playwright-report
+/test-results
+
+# Env & secrets (never commit real secrets)
+.env
+.env*.local
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
