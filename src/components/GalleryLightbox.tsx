@@ -80,6 +80,7 @@ export function GalleryLightbox({ items }: { items: readonly SampleMediaItem[] }
                 width={item.width}
                 height={item.height}
                 unoptimized
+                referrerPolicy="no-referrer"
                 className="h-full w-full object-cover"
               />
               <span
@@ -149,6 +150,7 @@ export function GalleryLightbox({ items }: { items: readonly SampleMediaItem[] }
                 width={selected.width}
                 height={selected.height}
                 unoptimized
+                referrerPolicy="no-referrer"
                 className="h-auto max-h-[60dvh] w-full object-contain"
               />
             </div>

@@ -27,6 +27,22 @@ describe("Publish Gate CMS (FR-13, ADR-05, SEC-16..18)", () => {
     expect(res.missingRequirements.length).toBeGreaterThanOrEqual(2);
   });
 
+  it("menolak publikasi revisi berstatus in_review meskipun sumber dan review lengkap (D3)", () => {
+    const res = validatePublishReadiness({
+      kind: "chapter",
+      status: "in_review",
+      sourcesCount: 1,
+      approvedReviewTypes: ["language", "material"],
+      hasLocationClearance: false,
+      attachedMedia: [],
+    });
+
+    expect(res.ready).toBe(false);
+    expect(
+      res.missingRequirements.some((m) => m.includes("approved"))
+    ).toBe(true);
+  });
+
   it("mewajibkan clearance lokasi wilayah umum untuk konten jenis site", () => {
     const res = validatePublishReadiness({
       kind: "site",

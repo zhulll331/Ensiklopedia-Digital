@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { apiError, apiOk } from "@/lib/server/http";
 import { createAdultSessionSupabaseClient } from "@/lib/server/supabase";
+import { isRetryableSupabaseAuthError } from "@/modules/admin/auth";
 
 const loginSchema = z
   .object({
@@ -35,6 +36,14 @@ export async function POST(request: NextRequest) {
   });
 
   if (error) {
+    if (isRetryableSupabaseAuthError(error)) {
+      return apiError(
+        503,
+        "TEMPORARILY_UNAVAILABLE",
+        "Koneksi ke layanan autentikasi sedang terganggu. Silakan coba lagi sebentar.",
+        { noStore: true }
+      );
+    }
     // Pesan umum agar tidak mengungkap apakah email tertentu terdaftar (SEC-01)
     return apiError(401, "AUTH_REQUIRED", "Email atau kata sandi tidak sesuai.", {
       noStore: true,

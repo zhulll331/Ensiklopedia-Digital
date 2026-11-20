@@ -67,4 +67,12 @@ export const RATE_LIMIT_POLICIES = {
   autosave: { limit: 30, windowSeconds: 60 },
   submit: { limit: 10, windowSeconds: 60 },
   export: { limit: 5, windowSeconds: 60 * 60 },
+  admin_login: { limit: 8, windowSeconds: 60 },
+  admin_mfa: { limit: 6, windowSeconds: 60 },
+  admin_upload_intent: { limit: 20, windowSeconds: 60 },
+  admin_publish: { limit: 15, windowSeconds: 60 },
+  admin_invite: { limit: 15, windowSeconds: 60 },
+  admin_support: { limit: 10, windowSeconds: 15 * 60 },
+  admin_ops: { limit: 15, windowSeconds: 15 * 60 },
+  teacher_activate: { limit: 15, windowSeconds: 15 * 60 },
 } as const;

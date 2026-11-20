@@ -58,6 +58,8 @@ const admin = createClient(supabaseUrl, adminSecret, {
 });
 
 const REQUIRED_BUCKETS = [
+  // Catatan SEC-19: Batas 50 MB menyesuaikan kuota default paket Free Supabase.
+  // Pada paket Pro/terkelola untuk unggahan video MP4 besar, batas bucket dapat dinaikkan hingga 250 MB.
   {
     name: "media-public",
     options: {
@@ -118,29 +120,41 @@ console.log(`Status Schema Data API -> app: ${appReady ? "SIAP" : `BELUM (${appC
 console.log(`Status Schema Data API -> api: ${apiReady ? "SIAP" : `BELUM (${apiCheck.error?.message ?? "unknown"})`}`);
 
 let rlsNeedFix = false;
+let adminNeedMigration = false;
 const publishableKey = env.SUPABASE_PUBLISHABLE_KEY;
 if (appReady && publishableKey) {
   const pub = createClient(supabaseUrl, publishableKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const [quizzesProbe, locationsProbe] = await Promise.all([
+  const [contentsProbe, quizzesProbe, locationsProbe, adminFnProbe] = await Promise.all([
+    pub.schema("app").from("content_items").select("id").limit(1),
     pub.schema("app").from("quizzes").select("id").limit(1),
     pub.schema("app").from("site_public_locations").select("revision_id").limit(1),
+    admin.schema("app").rpc("current_user_is_active_admin"),
   ]);
 
+  const contentsOk = !contentsProbe.error;
   const quizzesOk = !quizzesProbe.error;
   const locationsOk = !locationsProbe.error;
+  const adminOk = !adminFnProbe.error;
   rlsNeedFix = !quizzesOk || !locationsOk;
+  adminNeedMigration = !adminOk || !contentsOk;
 
+  console.log(
+    `Status RLS Publik (anon) -> app.content_items: ${contentsOk ? "SIAP" : `GAGAL (${contentsProbe.error.code ?? ""} ${contentsProbe.error.message})`}`
+  );
   console.log(
     `Status RLS Publik (anon) -> app.quizzes: ${quizzesOk ? "SIAP" : `GAGAL (${quizzesProbe.error.code ?? ""} ${quizzesProbe.error.message})`}`
   );
   console.log(
     `Status RLS Publik (anon) -> app.site_public_locations: ${locationsOk ? "SIAP" : `GAGAL (${locationsProbe.error.code ?? ""} ${locationsProbe.error.message})`}`
   );
+  console.log(
+    `Status Fondasi Admin (0010) -> app.current_user_is_active_admin: ${adminOk ? "SIAP" : `BELUM (${adminFnProbe.error.message})`}`
+  );
 }
 
-if (!appReady || !apiReady || rlsNeedFix) {
+if (!appReady || !apiReady || rlsNeedFix || adminNeedMigration) {
   let projectRef = "<project-ref>";
   try {
     projectRef = new URL(supabaseUrl).hostname.split(".")[0] || projectRef;
@@ -155,9 +169,14 @@ if (!appReady || !apiReady || rlsNeedFix) {
     console.log(`2. Data API Settings: https://supabase.com/dashboard/project/${projectRef}/settings/api`);
     console.log('   Pada "Exposed schemas", tambahkan "app" dan "api" (JANGAN expose "private"), lalu klik Save.');
   } else {
-    console.log("Perbaikan kebijakan RLS diperlukan di Supabase SQL Editor:");
+    console.log("Migrasi SQL lanjutan diperlukan di Supabase SQL Editor:");
     console.log(`1. SQL Editor: https://supabase.com/dashboard/project/${projectRef}/sql/new`);
-    console.log("   Jalankan isi berkas supabase/migrations/0009_fix_rls_recursion_and_location_helper.sql.");
+    if (rlsNeedFix) {
+      console.log("   Jalankan isi berkas supabase/migrations/0009_fix_rls_recursion_and_location_helper.sql.");
+    }
+    if (adminNeedMigration) {
+      console.log("   Jalankan isi berkas supabase/migrations/0010_admin_foundation.sql.");
+    }
   }
   console.log("3. Setelah itu jalankan ulang: npm run supabase:bootstrap");
 }

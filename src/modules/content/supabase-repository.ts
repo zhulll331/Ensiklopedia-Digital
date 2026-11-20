@@ -1,8 +1,9 @@
 import "server-only";
 import {
-  createAdminSecretSupabaseClient,
+  createAdultSessionSupabaseClient,
   createPublicSupabaseClient,
 } from "@/lib/server/supabase";
+import { detectExternalMediaPreview } from "@/modules/admin/external-media";
 import { validatePublishReadiness } from "./publish-gate";
 import type {
   PublicContentSummary,
@@ -388,15 +389,19 @@ export async function listClearedGalleryMediaSupabase(): Promise<
   const metaMap = new Map((links ?? []).map((l) => [l.asset_id, l]));
   const items: SampleMediaItem[] = (assets ?? []).map((a) => {
     const link = metaMap.get(a.id);
-    const { data: pubUrl } = client.storage
-      .from(a.storage_bucket)
-      .getPublicUrl(a.storage_path);
+    const isExternal =
+      a.storage_bucket === "external-link" ||
+      a.storage_path.startsWith("https://");
+    const resolvedSrc = isExternal
+      ? a.storage_path
+      : client.storage.from(a.storage_bucket).getPublicUrl(a.storage_path).data
+          .publicUrl;
     return {
       id: a.id,
-      title: link?.caption || "Media Terkurasi",
+      title: link?.caption || (isExternal ? "Media Tautan Terkurasi" : "Media Terkurasi"),
       badge: a.kind === "illustration" ? "Ilustrasi" : "Foto",
       kind: a.kind as "image" | "illustration",
-      src: pubUrl.publicUrl,
+      src: resolvedSrc,
       alt_text: link?.alt_text || "Media situs megalitik Banyuwangi",
       caption: link?.caption || "",
       credit: a.credit || "Tim EDMB",
@@ -428,10 +433,66 @@ export async function listPublishedVideosSupabase(): Promise<
   const res = await fetchPublishedItemsByKinds(["video"]);
   if (res.schemaNotReady) return { schemaNotReady: true, data: [] };
 
+  const client = createPublicSupabaseClient();
+  const revIds = res.data.map((r) => r.revision!.id);
+
+  const [{ data: mediaLinks }, { data: publicVideoAssets }] = await Promise.all([
+    client && revIds.length > 0
+      ? client
+          .schema("app")
+          .from("content_media")
+          .select("revision_id, asset_id, role, sort_order")
+          .in("revision_id", revIds)
+          .order("sort_order", { ascending: true })
+      : Promise.resolve({ data: [] as Array<{ revision_id: string; asset_id: string; role: string; sort_order: number }> }),
+    client
+      ? client
+          .schema("app")
+          .from("media_assets")
+          .select("id, kind, storage_bucket, storage_path, credit, license, scan_status, metadata_scrubbed_at")
+          .eq("visibility", "public")
+          .eq("scan_status", "cleared")
+          .not("metadata_scrubbed_at", "is", null)
+          .eq("kind", "video")
+      : Promise.resolve({ data: [] as Array<{ id: string; kind: string; storage_bucket: string; storage_path: string; credit: string; license: string }> }),
+  ]);
+
+  const videoAssetById = new Map((publicVideoAssets ?? []).map((a) => [a.id, a]));
+  const usedVideoAssetIds = new Set<string>();
+
+  const resolvePublicMediaUrl = (asset: { storage_bucket: string; storage_path: string }): string => {
+    if (
+      asset.storage_bucket === "external-link" ||
+      asset.storage_path.startsWith("https://")
+    ) {
+      return asset.storage_path;
+    }
+    return client
+      ? client.storage.from(asset.storage_bucket).getPublicUrl(asset.storage_path)
+          .data.publicUrl
+      : asset.storage_path;
+  };
+
   const videos: SampleVideoItem[] = res.data.map((row) => {
     const rev = row.revision!;
     const body = rev.body_json ?? {};
     const meta = rev.metadata_json ?? {};
+    const linked = (mediaLinks ?? []).find(
+      (ml) => ml.revision_id === rev.id && videoAssetById.has(ml.asset_id)
+    );
+    const linkedAsset = linked ? videoAssetById.get(linked.asset_id) : undefined;
+    if (linkedAsset) {
+      usedVideoAssetIds.add(linkedAsset.id);
+    }
+
+    const metaVideoUrl = asString(meta.video_url);
+    const resolvedVideoUrl = linkedAsset
+      ? resolvePublicMediaUrl(linkedAsset)
+      : metaVideoUrl || undefined;
+    const previewMeta = resolvedVideoUrl
+      ? detectExternalMediaPreview(resolvedVideoUrl, "video")
+      : null;
+
     return {
       id: row.id,
       slug: row.slug,
@@ -439,13 +500,53 @@ export async function listPublishedVideosSupabase(): Promise<
       summary: rev.summary,
       duration_label: asString(meta.duration_label, "02:00"),
       target_grades: asGrades(rev.target_grades),
-      poster_src: asString(meta.poster_src, "/images/samples/ilustrasi-menhir-dolmen.svg"),
+      poster_src: asString(
+        meta.poster_src,
+        previewMeta?.posterUrl ?? "/images/samples/ilustrasi-menhir-dolmen.svg"
+      ),
       poster_alt: asString(meta.poster_alt, rev.title),
       transcript: asStringArray(body.transcript),
       captions_available: Boolean(meta.captions_available),
+      ...(resolvedVideoUrl
+        ? {
+            video_url: resolvedVideoUrl,
+            source_kind:
+              linkedAsset?.storage_bucket === "media-public"
+                ? ("uploaded" as const)
+                : ("external" as const),
+          }
+        : {}),
       status: "published" as const,
     };
   });
+
+  // Sertakan juga aset video cleared di Perpustakaan Media yang belum ditautkan ke revisi video khusus
+  for (const asset of publicVideoAssets ?? []) {
+    if (usedVideoAssetIds.has(asset.id)) continue;
+    const url = resolvePublicMediaUrl(asset);
+    const preview = detectExternalMediaPreview(url, "video");
+    const isExternal = asset.storage_bucket === "external-link";
+    videos.push({
+      id: asset.id,
+      slug: `video-${asset.id}`,
+      title: asset.credit ? `Video: ${asset.credit}` : `Video Terkurasi (${preview.providerLabel})`,
+      summary: isExternal
+        ? `Sumber video eksternal (${preview.providerLabel}) • Lisensi: ${asset.license || "Terkurasi"}`
+        : `Video unggahan terkurasi • Lisensi: ${asset.license || "Internal EDMB"}`,
+      duration_label: preview.providerLabel,
+      target_grades: [3, 4],
+      poster_src:
+        preview.posterUrl ?? "/images/samples/ilustrasi-menhir-dolmen.svg",
+      poster_alt: asset.credit
+        ? `Poster video oleh ${asset.credit}`
+        : "Poster video edukasi megalitik Banyuwangi",
+      transcript: [],
+      captions_available: false,
+      video_url: url,
+      source_kind: isExternal ? "external" : "uploaded",
+      status: "published",
+    });
+  }
 
   return { schemaNotReady: false, data: videos };
 }
@@ -578,7 +679,7 @@ export async function getPublishedStatsSupabase(): Promise<
 export async function listAdminRevisionsSupabase(): Promise<
   SupabaseReadResult<Array<SampleAdminRevisionRow & { publish_gate: ReturnType<typeof validatePublishReadiness> }>>
 > {
-  const admin = createAdminSecretSupabaseClient();
+  const admin = await createAdultSessionSupabaseClient();
   if (!admin) return { schemaNotReady: true, data: [] };
 
   const { data: revisions, error } = await admin

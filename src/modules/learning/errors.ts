@@ -10,7 +10,9 @@ export type LearningErrorCode =
   | "TASK_UNAVAILABLE"
   | "ATTEMPT_EXPIRED"
   | "VALIDATION_FAILED"
-  | "RATE_LIMITED";
+  | "PAYLOAD_TOO_LARGE"
+  | "RATE_LIMITED"
+  | "TEMPORARILY_UNAVAILABLE";
 
 export class DomainError extends Error {
   constructor(

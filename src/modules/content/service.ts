@@ -1,5 +1,5 @@
 import "server-only";
-import { isSupabaseAdminConfigured, isSupabaseConfigured } from "@/lib/server/env";
+import { isSupabaseConfigured } from "@/lib/server/env";
 import { logServerEvent } from "@/lib/server/logger";
 import * as localRepo from "./repository";
 import type { PublicContentSummary, PublicMapAreaSummary } from "./repository";
@@ -190,7 +190,7 @@ export async function getPublishedStatsAsync() {
 export async function listAdminRevisionsAsync(): Promise<
   Array<SampleAdminRevisionRow & { publish_gate: ReturnType<typeof localRepo.listAdminRevisions>[number]["publish_gate"] }>
 > {
-  if (!isSupabaseAdminConfigured()) {
+  if (!isSupabaseConfigured()) {
     return localRepo.listAdminRevisions();
   }
   const remote = await supaRepo.listAdminRevisionsSupabase();

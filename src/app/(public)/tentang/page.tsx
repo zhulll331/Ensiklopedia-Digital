@@ -1,8 +1,14 @@
+import { getPublicSiteSettingsAsync } from "@/modules/admin/ops-service";
+
+export const revalidate = 60;
+
 export const metadata = {
   title: "Tentang & Privasi | EDMB",
 };
 
-export default function TentangPage() {
+export default async function TentangPage() {
+  const settings = await getPublicSiteSettingsAsync();
+
   return (
     <div className="mx-auto max-w-[75rem] space-y-8 px-4 py-8 sm:px-6 lg:px-8">
       <header className="space-y-2">
@@ -24,6 +30,9 @@ export default function TentangPage() {
         <h2 className="text-xl font-bold text-[#1f2a24]">
           Ringkasan Kebijakan Privasi &amp; Pelindungan Situs
         </h2>
+        <p className="max-w-[68ch] text-sm font-semibold text-[#1f2a24]">
+          {settings.privacy_notice_summary}
+        </p>
         <ul className="max-w-[68ch] list-disc space-y-2 pl-5 text-sm text-[#3a4640]">
           <li>
             Siswa mengerjakan kuis tanpa membuat akun, tanpa kata sandi, dan
@@ -39,8 +48,15 @@ export default function TentangPage() {
             hanya menampilkan perkiraan wilayah umum.
           </li>
           <li>
-            Pengelola resmi &amp; kontak privasi: [Nama Pengelola Resmi — belum
-            diisi] / [Email Kontak Privasi — belum diisi].
+            Pengelola resmi &amp; kontak privasi:{" "}
+            <span className="font-semibold text-[#1f2a24]">
+              {settings.contact_org_name}
+            </span>{" "}
+            /{" "}
+            <span className="font-semibold text-[#1f2a24]">
+              {settings.contact_email}
+            </span>
+            .
           </li>
         </ul>
       </section>

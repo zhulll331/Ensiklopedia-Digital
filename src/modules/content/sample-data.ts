@@ -98,6 +98,8 @@ export interface SampleVideoItem {
   poster_alt: string;
   transcript: string[];
   captions_available: boolean;
+  video_url?: string;
+  source_kind?: "uploaded" | "external";
   status: ContentStatus;
 }
 

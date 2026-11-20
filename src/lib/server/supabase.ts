@@ -2,6 +2,10 @@ import "server-only";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
+import {
+  ensurePreferredIpv4NetworkConfig,
+  resilientSupabaseFetch,
+} from "@/lib/node-network";
 import { getServerEnv } from "./env";
 
 /**
@@ -12,8 +16,10 @@ export function createPublicSupabaseClient() {
   if (!env.SUPABASE_URL || !env.SUPABASE_PUBLISHABLE_KEY) {
     return null;
   }
+  ensurePreferredIpv4NetworkConfig();
   return createClient(env.SUPABASE_URL, env.SUPABASE_PUBLISHABLE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
+    global: { fetch: resilientSupabaseFetch },
   });
 }
 
@@ -25,9 +31,11 @@ export async function createAdultSessionSupabaseClient() {
   if (!env.SUPABASE_URL || !env.SUPABASE_PUBLISHABLE_KEY) {
     return null;
   }
+  ensurePreferredIpv4NetworkConfig();
   const cookieStore = await cookies();
 
   return createServerClient(env.SUPABASE_URL, env.SUPABASE_PUBLISHABLE_KEY, {
+    global: { fetch: resilientSupabaseFetch },
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -54,7 +62,9 @@ export function createAdminSecretSupabaseClient() {
   if (!env.SUPABASE_URL || !env.SUPABASE_ADMIN_SECRET) {
     return null;
   }
+  ensurePreferredIpv4NetworkConfig();
   return createClient(env.SUPABASE_URL, env.SUPABASE_ADMIN_SECRET, {
     auth: { persistSession: false, autoRefreshToken: false },
+    global: { fetch: resilientSupabaseFetch },
   });
 }

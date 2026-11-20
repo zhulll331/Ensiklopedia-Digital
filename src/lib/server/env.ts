@@ -21,12 +21,32 @@ export function resetServerEnvCacheForTests(): void {
   cachedEnv = null;
 }
 
+export function resolveDefaultPublicAppUrl(): string {
+  const explicit = process.env.PUBLIC_APP_URL?.trim();
+  if (explicit) {
+    return explicit;
+  }
+  const prodHost = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  if (prodHost) {
+    return prodHost.startsWith("http://") || prodHost.startsWith("https://")
+      ? prodHost
+      : `https://${prodHost}`;
+  }
+  const previewHost = process.env.VERCEL_URL?.trim();
+  if (previewHost) {
+    return previewHost.startsWith("http://") || previewHost.startsWith("https://")
+      ? previewHost
+      : `https://${previewHost}`;
+  }
+  return "http://localhost:3000";
+}
+
 export function getServerEnv(): ServerEnv {
   if (cachedEnv && process.env.NODE_ENV !== "test") {
     return cachedEnv;
   }
   const parsed = serverEnvSchema.safeParse({
-    PUBLIC_APP_URL: process.env.PUBLIC_APP_URL || "http://localhost:3000",
+    PUBLIC_APP_URL: resolveDefaultPublicAppUrl(),
     SUPABASE_URL: process.env.SUPABASE_URL || undefined,
     SUPABASE_PUBLISHABLE_KEY: process.env.SUPABASE_PUBLISHABLE_KEY || undefined,
     SUPABASE_ADMIN_SECRET: process.env.SUPABASE_ADMIN_SECRET || undefined,

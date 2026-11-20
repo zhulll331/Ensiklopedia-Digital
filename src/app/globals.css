@@ -101,6 +101,48 @@
 }
 
 @layer components {
+  :root {
+    --in-oklab: ;
+  }
+
+  @supports (background: linear-gradient(in oklab, white, black)) {
+    :root {
+      --in-oklab: in oklab;
+    }
+  }
+
+  /* Overlay gradien hero horizontal & bawah menggunakan ruang warna oklab bila didukung (visual-effects) */
+  .hero-overlay-horizontal {
+    background: linear-gradient(
+      to bottom var(--in-oklab),
+      rgba(31, 77, 56, 0.94) 0%,
+      rgba(31, 77, 56, 0.84) 55%,
+      rgba(31, 77, 56, 0.58) 100%
+    );
+  }
+
+  @media (min-width: 64rem) {
+    .hero-overlay-horizontal {
+      background: linear-gradient(
+        to right var(--in-oklab),
+        #1f4d38 0%,
+        rgba(31, 77, 56, 0.96) 36%,
+        rgba(31, 77, 56, 0.72) 58%,
+        rgba(31, 77, 56, 0.24) 80%,
+        transparent 100%
+      );
+    }
+  }
+
+  .hero-overlay-bottom {
+    background: linear-gradient(
+      to bottom var(--in-oklab),
+      transparent 0%,
+      rgba(230, 240, 231, 0.52) 58%,
+      #e6f0e7 100%
+    );
+  }
+
   /* Utilitas aksesibilitas sesuai panduan accessibility:
      tetap tampil saat menerima fokus keyboard (untuk skip link). */
   .visually-hidden:where(:not(:focus-within, :active)) {
@@ -273,6 +315,17 @@
   }
 
   /* Tabel rekap guru responsif sesuai panduan responsive-table */
+  .edmb-field-control {
+    font: inherit;
+    font-size: max(1rem, 1em);
+    min-block-size: 3rem;
+  }
+
+  .edmb-field-control:is(:user-invalid, .user-invalid-fallback) {
+    border-color: #b42318;
+    background-color: #fef3f2;
+  }
+
   .table-wrapper {
     overflow: auto;
     max-inline-size: 100%;
@@ -331,8 +384,10 @@
     .responsive-results-table td {
       padding-block: 0.35rem;
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
-      gap: 0.75rem;
+      align-items: flex-start;
+      gap: 0.5rem 0.75rem;
     }
 
     .responsive-results-table td::before {
@@ -340,6 +395,84 @@
       font-weight: 700;
       color: var(--ink-500);
     }
+
+    .responsive-results-table td[colspan]::before {
+      content: none;
+    }
+  }
+
+  /* Breadcrumbs hierarkis & sidebar admin sesuai panduan breadcrumbs & navbar */
+  .admin-breadcrumb > ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .admin-breadcrumb > ol > li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .admin-breadcrumb > ol > li + li::before {
+    content: "/";
+    content: "/" / "";
+    color: var(--ink-500);
+  }
+
+  .admin-breadcrumb a:focus-visible {
+    position: relative;
+    z-index: 1;
+  }
+
+  .admin-menu-trigger {
+    anchor-name: --admin-menu-btn;
+  }
+
+  .admin-sidebar-menu {
+    position: fixed;
+    inset: auto;
+    inset-block-start: 4.75rem;
+    inset-block-start: anchor(--admin-menu-btn bottom);
+    inset-inline-start: 1rem;
+    inline-size: min(85dvw, 20rem);
+    max-inline-size: calc(100dvw - 2rem);
+    block-size: fit-content;
+    max-block-size: min(58dvh, 28rem);
+    margin-block-start: 0.5rem;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+@media (max-width: 63.999rem) {
+  .admin-sidebar-menu:not(:is(:popover-open, .\:popover-open, .is-fallback-open)) {
+    display: none;
+  }
+}
+
+@media (min-width: 64rem) {
+  .admin-menu-trigger {
+    display: none;
+  }
+
+  .admin-sidebar-menu {
+    position: static;
+    display: block;
+    inline-size: 100%;
+    max-inline-size: none;
+    block-size: auto;
+    max-block-size: none;
+    overflow: visible;
+    margin: 0;
+  }
+
+  .admin-sidebar-menu::backdrop {
+    display: none;
   }
 }
 
@@ -358,5 +491,23 @@
 @media (forced-colors: active) {
   :where(a:any-link, button, input, select, textarea, summary, [tabindex]):focus-visible {
     outline: 3px solid Highlight;
+  }
+
+  [aria-current="page"] {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+
+  .admin-breadcrumb [aria-current="page"] {
+    text-decoration: underline;
+    outline: none;
+  }
+
+  .card-feature {
+    border: 1px solid CanvasText;
+  }
+
+  .hero-bg-media {
+    display: none;
   }
 }

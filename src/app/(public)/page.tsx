@@ -4,19 +4,20 @@ import {
   ArrowRight,
   BookOpen,
   Compass,
-  GraduationCap,
   HelpCircle,
   Play,
+  Sparkles,
 } from "lucide-react";
+import { getPublicSiteSettingsAsync } from "@/modules/admin/ops-service";
 import { getPublishedStatsAsync } from "@/modules/content/service";
 
 export const revalidate = 60;
 
 const FEATURE_CARDS = [
   {
-    title: "Buku Digital",
+    title: "Bacaan Ramah Anak (Kelas III & IV SD)",
     description:
-      "Baca cerita bergambar tentang tinggalan batu megalitik dalam bab pendek.",
+      "Cerita bergambar tentang menhir, dolmen, dan batu kenong dalam bab pendek yang mudah dipahami.",
     href: "/ensiklopedia",
     icon: BookOpen,
     iconBg: "bg-[#dcebdd]",
@@ -24,9 +25,9 @@ const FEATURE_CARDS = [
     accentText: "text-[#1f4d38]",
   },
   {
-    title: "Jelajah Situs",
+    title: "Peta Wilayah Aman",
     description:
-      "Kenali jenis tinggalan dan wilayah umum situs megalitik di Banyuwangi.",
+      "Kenali jenis tinggalan dan perkiraan wilayah umum situs megalitik di Banyuwangi tanpa koordinat persis.",
     href: "/jelajah-situs",
     icon: Compass,
     iconBg: "bg-[#f6dfd2]",
@@ -34,9 +35,9 @@ const FEATURE_CARDS = [
     accentText: "text-[#8f3d1b]",
   },
   {
-    title: "Kuis Seru",
+    title: "Kuis Pendampingan",
     description:
-      "Berlatih menjawab soal pengamatan tanpa login atau masuk ke tugas gurumu.",
+      "Berlatih soal pengamatan secara mandiri atau masuk ke tugas kelas bersama guru tanpa login siswa.",
     href: "/kuis",
     icon: HelpCircle,
     iconBg: "bg-[#fbefcf]",
@@ -44,11 +45,11 @@ const FEATURE_CARDS = [
     accentText: "text-[#8a5a00]",
   },
   {
-    title: "Ruang Guru",
+    title: "Media Belajar Interaktif",
     description:
-      "Panduan kokurikuler, LKPD kelas III dan IV, serta dashboard tugas kelas.",
-    href: "/ruang-guru",
-    icon: GraduationCap,
+      "Video pengantar lapangan, galeri ilustrasi situs, dan glosarium istilah arkeologi ramah anak.",
+    href: "/media",
+    icon: Sparkles,
     iconBg: "bg-[#d8eef0]",
     iconColor: "text-[#0e6f7a]",
     accentText: "text-[#0e6f7a]",
@@ -56,115 +57,160 @@ const FEATURE_CARDS = [
 ] as const;
 
 export default async function HomePage() {
-  const stats = await getPublishedStatsAsync();
+  const [stats, settings] = await Promise.all([
+    getPublishedStatsAsync(),
+    getPublicSiteSettingsAsync(),
+  ]);
   const hasStats =
     stats.chapters_count > 0 || stats.sites_count > 0 || stats.videos_count > 0;
+  const isDefaultHeroTitle =
+    settings.hero_title.trim() === "Menjelajah Jejak Megalitik Banyuwangi";
 
   return (
-    <div className="mx-auto max-w-[75rem] px-4 pt-8 pb-8 sm:px-6 lg:px-8">
-      {/* Hero 2 kolom */}
-      <section className="grid items-center gap-8 py-6 lg:grid-cols-12 lg:py-10">
-        <div className="space-y-5 lg:col-span-7">
-          <p className="inline-flex items-center gap-2 rounded-full border border-[#d6cec1] bg-white/85 px-4 py-1.5 text-sm font-bold text-[#1f4d38]">
-            <span
-              className="h-2 w-2 rounded-full bg-[#2f6b4f]"
-              aria-hidden="true"
-            />
-            Selamat datang di EDMB
-          </p>
+    <div>
+      {/* Full-bleed blended hero banner */}
+      <section
+        aria-labelledby="hero-heading"
+        className="relative isolate overflow-hidden bg-[#1f4d38] pt-28 pb-32 sm:pt-32 sm:pb-40 lg:pt-36 lg:pb-44"
+      >
+        {/* Background foto atmosfer situs megalitik di sisi kanan */}
+        <div
+          aria-hidden="true"
+          className="hero-bg-media pointer-events-none absolute inset-y-0 right-0 -z-20 w-full lg:w-[76%]"
+        >
+          <Image
+            src="/images/hero-megalitik-banyuwangi.webp"
+            alt=""
+            width={1376}
+            height={768}
+            priority
+            fetchPriority="high"
+            sizes="(min-width: 1024px) 76vw, 100vw"
+            className="h-full w-full object-cover object-center lg:object-[72%_center]"
+          />
+        </div>
 
-          <h1 className="display-hero text-[#1f2a24]">
-            Menjelajah{" "}
-            <span className="text-[#2f6b4f]">Jejak Megalitik</span> Banyuwangi
-          </h1>
+        {/* Overlay gradien horizontal: hijau gelap solid di kiri ke transparan di kanan */}
+        <div
+          aria-hidden="true"
+          className="hero-overlay-horizontal pointer-events-none absolute inset-0 -z-10"
+        />
 
-          <p className="max-w-[68ch] text-base leading-relaxed text-[#3a4640] sm:text-lg">
-            Pelajari warisan batu leluhur di Banyuwangi melalui bacaan ramah anak
-            untuk kelas III dan IV SD, peta wilayah umum yang aman, dan kuis
-            pendampingan guru.
-          </p>
+        {/* Subtle ambient glowing bokeh light orbs (tema hijau & aksen hangat) */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+        >
+          <div className="absolute -top-20 -left-16 h-80 w-80 rounded-full bg-[#4a8a68]/35 blur-3xl" />
+          <div className="absolute top-24 left-[28%] h-72 w-72 rounded-full bg-[#e0a526]/20 blur-3xl" />
+          <div className="absolute right-[12%] bottom-20 h-64 w-64 rounded-full bg-[#2aa3ad]/18 blur-3xl" />
+        </div>
 
-          <div className="flex flex-wrap items-center gap-3 pt-1">
-            <Link href="/ensiklopedia" className="btn-primary">
-              Mulai Membaca
-              <ArrowRight size={18} strokeWidth={1.75} aria-hidden="true" />
-            </Link>
-            {stats.videos_count > 0 ? (
-              <Link href="/media?tab=video" className="btn-secondary">
+        {/* Smooth bottom fade ke warna latar halaman bagian bawah */}
+        <div
+          aria-hidden="true"
+          className="hero-overlay-bottom pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-36 sm:h-44"
+        />
+
+        <div className="mx-auto max-w-[75rem] px-4 sm:px-6 lg:px-8">
+          <div className="max-w-2xl space-y-5">
+            <p className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/12 px-4 py-1.5 text-sm font-bold text-[#f0f6f0] backdrop-blur-md">
+              <span
+                className="h-2 w-2 rounded-full bg-[#e0a526]"
+                aria-hidden="true"
+              />
+              Selamat datang di EDMB
+            </p>
+
+            <h1 id="hero-heading" className="display-hero text-white">
+              {isDefaultHeroTitle ? (
+                <>
+                  Menjelajah{" "}
+                  <span className="text-[#e0a526]">Jejak Megalitik</span>{" "}
+                  Banyuwangi
+                </>
+              ) : (
+                settings.hero_title
+              )}
+            </h1>
+
+            <p className="max-w-[62ch] text-base leading-relaxed text-[#efeae2] sm:text-lg">
+              {settings.hero_subtitle}
+            </p>
+
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <Link
+                href="/ensiklopedia"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#e0a526] px-6 py-3 font-extrabold text-[#1f2a24] no-underline shadow-[0_10px_24px_rgba(0,0,0,0.22)] transition hover:bg-[#ebb63d]"
+              >
+                Mulai Membaca
+                <ArrowRight size={18} strokeWidth={2} aria-hidden="true" />
+              </Link>
+              <Link
+                href="/media?tab=video"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/35 bg-white/12 px-6 py-3 font-bold text-white no-underline backdrop-blur-md transition hover:bg-white/22"
+              >
                 <Play size={18} strokeWidth={1.75} aria-hidden="true" />
                 Tonton Video
               </Link>
-            ) : null}
+            </div>
+
+            <p
+              aria-hidden="true"
+              className="script-slogan hidden pt-1 text-[#fbefcf] sm:block"
+            >
+              {settings.hero_slogan}
+            </p>
           </div>
-
-          <p aria-hidden="true" className="script-slogan hidden pt-1 sm:block">
-            Kenali, Jaga, Lestarikan
-          </p>
-        </div>
-
-        {/* Ilustrasi hero berlabel sesuai desain (5).md bagian 9.1 */}
-        <div className="lg:col-span-5">
-          <figure className="glass-surface relative overflow-hidden rounded-[24px] p-6">
-            <span className="absolute top-4 right-4 rounded-full bg-[#fbefcf] px-3 py-1 text-xs font-bold text-[#8a5a00]">
-              Ilustrasi
-            </span>
-            <Image
-              src="/images/samples/ilustrasi-menhir-dolmen.svg"
-              alt="Ilustrasi siluet menhir dan dolmen di alam Banyuwangi"
-              width={800}
-              height={600}
-              priority
-              unoptimized
-              className="h-auto max-h-60 w-full rounded-2xl bg-[#faf6ee] object-cover"
-            />
-            <figcaption className="mt-3 text-xs font-semibold text-[#5b6760]">
-              Ilustrasi pengantar tinggalan megalitik Banyuwangi (menhir dan
-              dolmen). Konten saat ini memakai sampel non-produksi untuk uji alur.
-            </figcaption>
-          </figure>
         </div>
       </section>
 
-      {/* 4 Kartu Fitur Kaca */}
-      <section aria-labelledby="heading-modul" className="py-6">
-        <h2 id="heading-modul" className="visually-hidden">
-          Menu Utama Pembelajaran
-        </h2>
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {FEATURE_CARDS.map((card) => {
-            const Icon = card.icon;
-            return (
-              <Link
-                key={card.href}
-                href={card.href}
-                className="glass-surface card-feature"
-              >
-                <div
-                  className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${card.iconBg} ${card.iconColor}`}
-                >
-                  <Icon size={22} strokeWidth={1.75} aria-hidden="true" />
-                </div>
-                <h3 className={`text-base font-bold sm:text-lg ${card.accentText}`}>
-                  {card.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-[#3a4640]">
-                  {card.description}
-                </p>
-                <span className="mt-auto inline-flex items-center gap-1 pt-1 text-sm font-bold text-[#1f4d38]">
-                  Buka
-                  <ArrowRight size={16} strokeWidth={1.75} aria-hidden="true" />
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
+      {/* Konten bawah dengan transisi mulus dari hero */}
+      <div className="bg-gradient-to-b from-[#e6f0e7] via-[#faf6ee]/70 to-transparent pb-8">
+        <div className="mx-auto max-w-[75rem] px-4 sm:px-6 lg:px-8">
+          {/* 4 Kartu Fitur Kaca yang overlap di tepi bawah hero */}
+          <section
+            aria-labelledby="heading-modul"
+            className="relative z-20 -mt-20 sm:-mt-24 lg:-mt-28"
+          >
+            <h2 id="heading-modul" className="visually-hidden">
+              Menu Utama Pembelajaran
+            </h2>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {FEATURE_CARDS.map((card) => {
+                const Icon = card.icon;
+                return (
+                  <Link
+                    key={card.href}
+                    href={card.href}
+                    className="card-feature rounded-2xl border border-white/70 bg-white/85 shadow-lg backdrop-blur-md"
+                  >
+                    <div
+                      className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${card.iconBg} ${card.iconColor}`}
+                    >
+                      <Icon size={22} strokeWidth={1.75} aria-hidden="true" />
+                    </div>
+                    <h3 className={`text-base font-bold sm:text-lg ${card.accentText}`}>
+                      {card.title}
+                    </h3>
+                    <p className="text-sm leading-relaxed text-[#3a4640]">
+                      {card.description}
+                    </p>
+                    <span className="mt-auto inline-flex items-center gap-1 pt-1 text-sm font-bold text-[#1f4d38]">
+                      Buka
+                      <ArrowRight size={16} strokeWidth={1.75} aria-hidden="true" />
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
 
-      {/* Tentang EDMB + Statistik Dinamis */}
-      <section
-        aria-labelledby="heading-tentang"
-        className="mt-8 grid items-center gap-6 rounded-[24px] border border-[#d6cec1] bg-white/90 p-6 sm:p-8 lg:grid-cols-12"
-      >
+          {/* Tentang EDMB + Statistik Dinamis */}
+          <section
+            aria-labelledby="heading-tentang"
+            className="mt-10 grid items-center gap-6 rounded-[24px] border border-[#d6cec1] bg-white/90 p-6 sm:p-8 lg:grid-cols-12"
+          >
         <div className="lg:col-span-4">
           <figure className="relative overflow-hidden rounded-2xl bg-[#faf6ee]">
             <span className="absolute top-3 left-3 rounded-full bg-[#fbefcf] px-3 py-0.5 text-xs font-bold text-[#8a5a00]">
@@ -249,6 +295,8 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+        </div>
+      </div>
     </div>
   );
 }

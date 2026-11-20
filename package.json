@@ -14,7 +14,8 @@
     "test:e2e": "playwright test",
     "db:check": "node scripts/check-migrations.mjs",
     "release:check": "node scripts/verify-release-readiness.mjs",
-    "supabase:bootstrap": "node scripts/bootstrap-supabase.mjs"
+    "supabase:bootstrap": "node scripts/bootstrap-supabase.mjs",
+    "admin:bootstrap": "node scripts/bootstrap-admin.mjs"
   },
   "dependencies": {
     "@fontsource-variable/nunito-sans": "latest",
@@ -28,6 +29,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "server-only": "latest",
+    "sharp": "latest",
     "zod": "latest"
   },
   "devDependencies": {
@@ -39,7 +41,6 @@
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "^16.0.0",
-    "sharp": "latest",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.8.0",
     "vitest": "latest"

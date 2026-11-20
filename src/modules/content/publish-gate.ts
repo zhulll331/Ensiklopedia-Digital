@@ -37,8 +37,10 @@ export function isRevisionMutable(status: ContentStatus): boolean {
 export function validatePublishReadiness(input: PublishGateInput): PublishGateResult {
   const missing: string[] = [];
 
-  if (input.status !== "approved" && input.status !== "in_review") {
-    missing.push("Status revisi harus berada pada tahap penelaahan atau disetujui sebelum terbit.");
+  if (input.status !== "approved") {
+    missing.push(
+      "Status revisi harus berstatus 'approved' (disetujui kurator) sebelum diterbitkan."
+    );
   }
 
   if (input.sourcesCount < 1) {

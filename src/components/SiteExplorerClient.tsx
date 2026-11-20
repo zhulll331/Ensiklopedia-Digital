@@ -3,6 +3,7 @@
 import { useId, useRef, useState } from "react";
 import Link from "next/link";
 import { MapPin, ShieldAlert } from "lucide-react";
+import { projectBanyuwangiSchematic } from "@/modules/admin/site-location";
 import type { SampleSiteDetail } from "@/modules/content/sample-data";
 
 export function SiteExplorerClient({
@@ -33,17 +34,6 @@ export function SiteExplorerClient({
   }
 
   const activeSite = sites.find((s) => s.slug === selectedSlug) ?? sites[0] ?? null;
-
-  // Proyeksi koordinat wilayah umum ke kanvas SVG skematis Banyuwangi (tanpa pin presisi)
-  function projectToSchematic(lat: number, lon: number) {
-    const minLon = 113.95;
-    const maxLon = 114.65;
-    const minLat = -8.65;
-    const maxLat = -7.95;
-    const x = Math.min(540, Math.max(60, ((lon - minLon) / (maxLon - minLon)) * 520 + 40));
-    const y = Math.min(340, Math.max(50, ((maxLat - lat) / (maxLat - minLat)) * 310 + 35));
-    return { x, y };
-  }
 
   return (
     <div className="space-y-6">
@@ -169,7 +159,7 @@ export function SiteExplorerClient({
                 strokeWidth="3"
               />
               {sites.map((site) => {
-                const { x, y } = projectToSchematic(
+                const { x, y } = projectBanyuwangiSchematic(
                   site.location.display_lat,
                   site.location.display_lon
                 );

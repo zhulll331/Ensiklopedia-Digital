@@ -242,6 +242,29 @@ export function TeacherDashboardClient({
     let active = true;
     async function initWorkspace() {
       await Promise.resolve();
+      if (!active) return;
+
+      if (typeof window !== "undefined" && window.location.search) {
+        const sp = new URLSearchParams(window.location.search);
+        const authStatus = sp.get("auth");
+        if (authStatus === "failed" || authStatus === "invalid") {
+          setLoginSubmitError(
+            "Tautan undangan atau autentikasi guru tidak valid atau sudah kedaluwarsa. Minta admin mengirim ulang undangan."
+          );
+          sp.delete("auth");
+          const nextSearch = sp.toString();
+          window.history.replaceState(
+            null,
+            "",
+            window.location.pathname + (nextSearch ? `?${nextSearch}` : "")
+          );
+        } else if (authStatus === "unconfigured") {
+          setLoginSubmitError(
+            "Layanan autentikasi Supabase belum dikonfigurasi pada server."
+          );
+        }
+      }
+
       if (active) {
         await loadWorkspace();
       }

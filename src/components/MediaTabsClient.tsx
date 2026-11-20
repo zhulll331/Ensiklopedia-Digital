@@ -3,6 +3,8 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { ExternalLink, Play } from "lucide-react";
+import { detectExternalMediaPreview } from "@/modules/admin/external-media";
 import { GalleryLightbox } from "./GalleryLightbox";
 import type {
   SampleGlossaryEntry,
@@ -26,6 +28,9 @@ export function MediaTabsClient({
   const [activeTab, setActiveTab] = useState<MediaTabKey>(initialTab);
   const [letter, setLetter] = useState<string>("ALL");
   const [glossaryQuery, setGlossaryQuery] = useState("");
+  const [playingVideoIds, setPlayingVideoIds] = useState<
+    Record<string, boolean>
+  >({});
   const containerRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
@@ -180,47 +185,153 @@ export function MediaTabsClient({
         tabIndex={activeTab === "video" ? 0 : undefined}
       >
         <div className="grid gap-6 md:grid-cols-2">
-          {videos.map((vid) => (
-            <article
-              key={vid.id}
-              className="space-y-4 rounded-[24px] border border-[#d6cec1] bg-white p-5"
-            >
-              <div className="space-y-1">
-                <span className="inline-block rounded-full bg-[#dcebdd] px-3 py-0.5 text-xs font-bold text-[#1f4d38]">
-                  Durasi: {vid.duration_label} • Kelas {vid.target_grades.join(" & ")}
-                </span>
-                <h2 className="text-lg font-bold text-[#1f2a24]">{vid.title}</h2>
-                <p className="text-sm text-[#3a4640]">{vid.summary}</p>
-              </div>
+          {videos.map((vid) => {
+            const videoUrl = vid.video_url?.trim() ?? "";
+            const mediaPreview = videoUrl
+              ? detectExternalMediaPreview(videoUrl, "video")
+              : null;
+            const isPlaying = Boolean(playingVideoIds[vid.id]);
 
-              <div className="overflow-hidden rounded-2xl border border-[#efeae2] bg-[#faf6ee]">
-                <Image
-                  src={vid.poster_src}
-                  alt={vid.poster_alt}
-                  width={800}
-                  height={450}
-                  unoptimized
-                  className="aspect-video w-full object-cover"
-                />
-                <p className="bg-[#efeae2] px-4 py-2 text-xs font-semibold text-[#3a4640]">
-                  Pemutar <code>&lt;video controls preload=&quot;none&quot;&gt;</code>{" "}
-                  dengan takarir (<code>&lt;track kind=&quot;captions&quot;&gt;</code>)
-                  aktif otomatis begitu berkas MP4 final diunggah.
-                </p>
-              </div>
-
-              <details className="rounded-xl border border-[#d6cec1] bg-[#faf6ee] p-3">
-                <summary className="min-h-10 cursor-pointer text-sm font-bold text-[#1f4d38]">
-                  Baca Transkrip Teks Video
-                </summary>
-                <div className="mt-2 space-y-1.5 text-sm text-[#3a4640]">
-                  {vid.transcript.map((line, i) => (
-                    <p key={i}>{line}</p>
-                  ))}
+            return (
+              <article
+                key={vid.id}
+                className="space-y-4 rounded-[24px] border border-[#d6cec1] bg-white p-5"
+              >
+                <div className="space-y-1">
+                  <span className="inline-block rounded-full bg-[#dcebdd] px-3 py-0.5 text-xs font-bold text-[#1f4d38]">
+                    Durasi: {vid.duration_label} • Kelas{" "}
+                    {vid.target_grades.join(" & ")}
+                  </span>
+                  <h2 className="text-lg font-bold text-[#1f2a24]">
+                    {vid.title}
+                  </h2>
+                  <p className="text-sm text-[#3a4640]">{vid.summary}</p>
                 </div>
-              </details>
-            </article>
-          ))}
+
+                <div className="overflow-hidden rounded-2xl border border-[#efeae2] bg-[#faf6ee]">
+                  {mediaPreview?.renderMode === "iframe" ? (
+                    isPlaying ? (
+                      <iframe
+                        src={mediaPreview.normalizedUrl}
+                        title={vid.title}
+                        className="aspect-video w-full border-0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        referrerPolicy="strict-origin-when-cross-origin"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div>
+                        <Image
+                          src={mediaPreview.posterUrl ?? vid.poster_src}
+                          alt={vid.poster_alt}
+                          width={800}
+                          height={450}
+                          unoptimized
+                          referrerPolicy="no-referrer"
+                          className="aspect-video w-full object-cover"
+                        />
+                        <div className="flex flex-wrap items-center justify-between gap-2 bg-[#efeae2] px-4 py-3">
+                          <span className="text-xs font-semibold text-[#3a4640]">
+                            Pemutar klik-untuk-putar ({mediaPreview.providerLabel}
+                            ) • Tanpa pemuatan pihak ketiga sebelum diputar.
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setPlayingVideoIds((prev) => ({
+                                ...prev,
+                                [vid.id]: true,
+                              }))
+                            }
+                            className="btn-primary min-h-11 text-xs"
+                          >
+                            <Play
+                              size={14}
+                              strokeWidth={1.75}
+                              aria-hidden="true"
+                            />
+                            Putar Video
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  ) : mediaPreview?.renderMode === "video" ? (
+                    <video
+                      controls
+                      preload="none"
+                      poster={vid.poster_src}
+                      className="aspect-video w-full bg-black"
+                    >
+                      <source src={mediaPreview.normalizedUrl} />
+                    </video>
+                  ) : mediaPreview?.renderMode === "link" &&
+                    mediaPreview.normalizedUrl.startsWith("https://") ? (
+                    <div>
+                      <Image
+                        src={vid.poster_src}
+                        alt={vid.poster_alt}
+                        width={800}
+                        height={450}
+                        unoptimized
+                        referrerPolicy="no-referrer"
+                        className="aspect-video w-full object-cover"
+                      />
+                      <div className="flex flex-wrap items-center justify-between gap-2 bg-[#efeae2] px-4 py-3">
+                        <span className="text-xs font-semibold text-[#3a4640]">
+                          Sumber: {mediaPreview.providerLabel}
+                        </span>
+                        <a
+                          href={mediaPreview.normalizedUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-secondary min-h-11 text-xs"
+                        >
+                          <ExternalLink
+                            size={14}
+                            strokeWidth={1.75}
+                            aria-hidden="true"
+                          />
+                          Buka Video di Tab Baru
+                        </a>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <Image
+                        src={vid.poster_src}
+                        alt={vid.poster_alt}
+                        width={800}
+                        height={450}
+                        unoptimized
+                        className="aspect-video w-full object-cover"
+                      />
+                      <p className="bg-[#efeae2] px-4 py-2 text-xs font-semibold text-[#3a4640]">
+                        Pemutar{" "}
+                        <code>&lt;video controls preload=&quot;none&quot;&gt;</code>{" "}
+                        dengan takarir (<code>&lt;track kind=&quot;captions&quot;&gt;</code>)
+                        aktif otomatis begitu berkas MP4 atau tautan video
+                        disetujui.
+                      </p>
+                    </>
+                  )}
+                </div>
+
+                {vid.transcript.length > 0 ? (
+                  <details className="rounded-xl border border-[#d6cec1] bg-[#faf6ee] p-3">
+                    <summary className="min-h-10 cursor-pointer text-sm font-bold text-[#1f4d38]">
+                      Baca Transkrip Teks Video
+                    </summary>
+                    <div className="mt-2 space-y-1.5 text-sm text-[#3a4640]">
+                      {vid.transcript.map((line, i) => (
+                        <p key={i}>{line}</p>
+                      ))}
+                    </div>
+                  </details>
+                ) : null}
+              </article>
+            );
+          })}
         </div>
       </div>
 

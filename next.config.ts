@@ -74,6 +74,24 @@ const nextConfig: NextConfig = {
         source: "/api/v1/security/:path*",
         headers: noStoreHeaders,
       },
+      {
+        source: "/api/v1/auth/:path*",
+        headers: noStoreHeaders,
+      },
+      {
+        source: "/auth/:path*",
+        headers: [
+          ...noStoreHeaders,
+          { key: "Referrer-Policy", value: "no-referrer" },
+        ],
+      },
+      {
+        source: "/auth",
+        headers: [
+          ...noStoreHeaders,
+          { key: "Referrer-Policy", value: "no-referrer" },
+        ],
+      },
     ];
   },
 };
